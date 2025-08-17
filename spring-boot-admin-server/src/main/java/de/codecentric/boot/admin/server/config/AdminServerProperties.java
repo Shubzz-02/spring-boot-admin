@@ -36,8 +36,8 @@ import static java.util.Arrays.asList;
 public class AdminServerProperties {
 
 	/**
-	 * The context-path prefixes the path where the Admin Servers statics assets and api
-	 * should be served. Relative to the Dispatcher-Servlet.
+	 * The context-path prefixes the path where the Admin Servers static assets and api
+	 * should be served, relative to the Dispatcher-Servlet.
 	 */
 	private String contextPath = "";
 
@@ -91,7 +91,7 @@ public class AdminServerProperties {
 	public static class MonitorProperties {
 
 		/**
-		 * Time interval to check the status of instances.
+		 * Time interval to check the status of instances, must be greater than 1 second.
 		 */
 		@DurationUnit(ChronoUnit.MILLIS)
 		private Duration statusInterval = Duration.ofMillis(10_000L);

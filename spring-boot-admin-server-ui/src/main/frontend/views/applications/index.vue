@@ -1,5 +1,5 @@
 <!--
-  - Copyright 2014-2019 the original author or authors.
+  - Copyright 2014-2024 the original author or authors.
   -
   - Licensed under the Apache License, Version 2.0 (the "License");
   - you may not use this file except in compliance with the License.
@@ -21,6 +21,9 @@
       <sba-sticky-subnav>
         <div class="container mx-auto flex">
           <ApplicationStats />
+          <sba-confirm-button class="mr-1" @click="refreshContext">
+            <font-awesome-icon :icon="'rotate-left'" />
+          </sba-confirm-button>
           <ApplicationNotificationCenter
             v-if="hasNotificationFiltersSupport"
             :notification-filters="notificationFilters"
@@ -179,6 +182,8 @@ import { computed, nextTick, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute, useRouter } from 'vue-router';
 
+import SbaButton from '@/components/sba-button.vue';
+import SbaConfirmButton from '@/components/sba-confirm-button.vue';
 import SbaStickySubnav from '@/components/sba-sticky-subnav.vue';
 import SbaWave from '@/components/sba-wave.vue';
 
@@ -186,8 +191,9 @@ import { useApplicationStore } from '@/composables/useApplicationStore';
 import Application from '@/services/application';
 import Instance from '@/services/instance';
 import NotificationFilter from '@/services/notification-filter';
+import axios from '@/utils/axios';
 import { anyValueMatches } from '@/utils/collections';
-import { concatMap, mergeWith, Subject, timer } from '@/utils/rxjs';
+import { Subject, concatMap, mergeWith, timer } from '@/utils/rxjs';
 import { useRouterState } from '@/utils/useRouterState';
 import { useSubscription } from '@/utils/useSubscription';
 import ApplicationListItemAction from '@/views/applications/ApplicationListItemAction.vue';
@@ -319,6 +325,12 @@ const grouped = computed(() => {
 
   return sortBy(list, [(item) => getApplicationStatus(item)]);
 });
+
+const refreshContext = () => {
+  axios.post('/applications').then(() => {
+    notificationCenter.success(t('applications.refreshed'));
+  });
+};
 
 function getApplicationStatus(item: InstancesListType): string {
   return applicationStore.findApplicationByInstanceId(item.instances[0].id)

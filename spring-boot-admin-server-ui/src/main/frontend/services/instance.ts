@@ -25,11 +25,8 @@ import waitForPolyfill from '../utils/eventsource-polyfill';
 import logtail from '../utils/logtail';
 import uri from '../utils/uri';
 
-const actuatorMimeTypes = [
-  'application/vnd.spring-boot.actuator.v2+json',
-  'application/vnd.spring-boot.actuator.v1+json',
-  'application/json',
-].join(',');
+import { useSbaConfig } from '@/sba-config';
+import { actuatorMimeTypes } from '@/services/spring-mime-types';
 
 const isInstanceActuatorRequest = (url: string) =>
   url.match(/^instances[/][^/]+[/]actuator([/].*)?$/);
@@ -50,7 +47,7 @@ class Instance {
     this.axios = axios.create({
       withCredentials: true,
       baseURL: uri`instances/${this.id}`,
-      headers: { Accept: actuatorMimeTypes },
+      headers: { Accept: actuatorMimeTypes.join(',') },
     });
     this.axios.interceptors.response.use(
       (response) => response,
@@ -115,6 +112,16 @@ class Instance {
         ...mBean,
       })),
     }));
+  }
+
+  showUrl() {
+    const sbaConfig = useSbaConfig();
+    if (sbaConfig.uiSettings.hideInstanceUrl) {
+      return false;
+    }
+
+    const hideUrlMetadata = this.registration.metadata?.['hide-url'];
+    return hideUrlMetadata !== 'true';
   }
 
   getId() {
@@ -206,6 +213,10 @@ class Instance {
     return this.axios.post(uri`actuator/refresh`);
   }
 
+  async busRefreshContext() {
+    return this.axios.post(uri`actuator/busrefresh`);
+  }
+
   async fetchLiquibase() {
     return this.axios.get(uri`actuator/liquibase`);
   }
@@ -278,6 +289,10 @@ class Instance {
 
   async fetchBeans() {
     return this.axios.get(uri`actuator/beans`);
+  }
+
+  async fetchConditions() {
+    return this.axios.get(uri`actuator/conditions`);
   }
 
   async fetchThreaddump() {

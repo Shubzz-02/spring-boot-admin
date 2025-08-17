@@ -22,6 +22,7 @@
     "delete": "Delete",
     "deleted": "Deleted",
     "duration": "Duration",
+    "epoch_time": "Epoch Time",
     "event": "Event",
     "ever": "ever",
     "execute": "Execute",
@@ -68,5 +69,16 @@
       "OUT_OF_SERVICE": "out of service",
       "OFFLINE": "offline"
     }
+  },
+  "time_short": {
+    "unknown": "unknown",
+    "milliseconds": "{count}ms",
+    "seconds": "{count}s",
+    "minutes": "{count}min",
+    "hours": "{count}h",
+    "days": "{count}d",
+    "weeks": "{count}wk",
+    "months": "{count}mo",
+    "years": "{count}y"
   }
 }

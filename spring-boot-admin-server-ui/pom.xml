@@ -18,15 +18,19 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <artifactId>spring-boot-admin-server-ui</artifactId>
+
     <name>Spring Boot Admin Server UI</name>
     <description>Spring Boot Admin Server UI</description>
+
     <parent>
         <groupId>de.codecentric</groupId>
         <artifactId>spring-boot-admin-build</artifactId>
         <version>${revision}</version>
         <relativePath>../spring-boot-admin-build</relativePath>
     </parent>
+
     <dependencies>
         <dependency>
             <groupId>de.codecentric</groupId>
@@ -68,6 +72,7 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -81,7 +86,6 @@
                         </goals>
                         <configuration>
                             <nodeVersion>${node.version}</nodeVersion>
-                            <npmVersion>${npm.version}</npmVersion>
                         </configuration>
                     </execution>
                     <execution>
@@ -90,8 +94,7 @@
                             <goal>npm</goal>
                         </goals>
                         <configuration>
-                            <!-- needs to be installed instead of ci as of a bug in npm; https://github.com/npm/cli/issues/4828 -->
-                            <arguments>i --no-progress --no-audit --quiet --silent</arguments>
+                            <arguments>ci --prefer-offline --no-progress --no-audit --silent</arguments>
                         </configuration>
                     </execution>
                     <execution>
@@ -121,38 +124,9 @@
                         <goals>
                             <goal>npm</goal>
                         </goals>
-                        <phase>verify</phase>
+                        <phase>test</phase>
                         <configuration>
                             <arguments>run test</arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <!-- Delete some node_modules due to a bug in npm optionalDependencies -->
-                <!-- see bug in npm https://github.com/npm/cli/issues/4828 -->
-                <artifactId>maven-clean-plugin</artifactId>
-                <version>3.4.0</version>
-                <executions>
-                    <execution>
-                        <id>auto-clean</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                        <configuration>
-                            <excludeDefaultDirectories>true</excludeDefaultDirectories>
-                            <filesets>
-                                <fileset>
-                                    <directory>node_modules</directory>
-                                </fileset>
-                                <fileset>
-                                    <directory>./</directory>
-                                    <includes>
-                                        <include>package-lock.json</include>
-                                    </includes>
-                                </fileset>
-                            </filesets>
                         </configuration>
                     </execution>
                 </executions>
@@ -172,20 +146,30 @@
                     </nonFilteredFileExtensions>
                     <includeEmptyDirs>true</includeEmptyDirs>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>
+                                ${project.build.outputDirectory}/META-INF/spring-boot-admin-server-ui
+                            </outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.build.directory}/dist</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
-
         </plugins>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-            </resource>
-            <resource>
-                <directory>target/dist</directory>
-                <targetPath>META-INF/spring-boot-admin-server-ui</targetPath>
-                <filtering>false</filtering>
-            </resource>
-        </resources>
     </build>
+
     <profiles>
         <profile>
             <id>noNpm</id>

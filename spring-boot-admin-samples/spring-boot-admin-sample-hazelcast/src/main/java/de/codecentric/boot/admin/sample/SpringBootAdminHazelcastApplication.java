@@ -32,13 +32,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import reactor.core.publisher.Mono;
 
 import de.codecentric.boot.admin.server.config.AdminServerProperties;
@@ -48,6 +47,8 @@ import de.codecentric.boot.admin.server.notify.Notifier;
 import static de.codecentric.boot.admin.server.config.AdminServerHazelcastAutoConfiguration.DEFAULT_NAME_EVENT_STORE_MAP;
 import static de.codecentric.boot.admin.server.config.AdminServerHazelcastAutoConfiguration.DEFAULT_NAME_SENT_NOTIFICATIONS_MAP;
 import static java.util.Collections.singletonList;
+import static org.springframework.http.HttpMethod.DELETE;
+import static org.springframework.http.HttpMethod.POST;
 
 @SpringBootApplication
 @EnableAdminServer
@@ -70,7 +71,7 @@ public class SpringBootAdminHazelcastApplication {
 			.setMergePolicyConfig(new MergePolicyConfig(PutIfAbsentMergePolicy.class.getName(), 100));
 
 		// This map is used to deduplicate the notifications.
-		// If data in this map gets lost it should not be a big issue as it will atmost
+		// If data in this map gets lost it should not be a big issue as it will utmost
 		// lead to
 		// the same notification to be sent by multiple instances
 		MapConfig sentNotificationsMap = new MapConfig(DEFAULT_NAME_SENT_NOTIFICATIONS_MAP)
@@ -96,7 +97,7 @@ public class SpringBootAdminHazelcastApplication {
 
 	@Bean
 	public Notifier loggingNotifier() {
-		return (event) -> Mono.fromRunnable(() -> log.info("Event occured: {}", event));
+		return (event) -> Mono.fromRunnable(() -> log.info("Event occurred: {}", event));
 	}
 
 	@Profile("insecure")
@@ -115,10 +116,10 @@ public class SpringBootAdminHazelcastApplication {
 				.csrf((csrf) -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 					.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 					.ignoringRequestMatchers(
-							new AntPathRequestMatcher(this.adminServer.path("/instances"), HttpMethod.POST.toString()),
-							new AntPathRequestMatcher(this.adminServer.path("/instances/*"),
-									HttpMethod.DELETE.toString()),
-							new AntPathRequestMatcher(this.adminServer.path("/actuator/**"))));
+							PathPatternRequestMatcher.withDefaults().matcher(POST, this.adminServer.path("/instances")),
+							PathPatternRequestMatcher.withDefaults()
+								.matcher(DELETE, this.adminServer.path("/instances/*")),
+							PathPatternRequestMatcher.withDefaults().matcher(this.adminServer.path("/actuator/**"))));
 
 			return http.build();
 		}
@@ -142,9 +143,9 @@ public class SpringBootAdminHazelcastApplication {
 			successHandler.setDefaultTargetUrl(this.adminServer.path("/"));
 
 			http.authorizeHttpRequests((authorizeRequests) -> authorizeRequests
-				.requestMatchers(new AntPathRequestMatcher(this.adminServer.path("/assets/**")))
+				.requestMatchers(PathPatternRequestMatcher.withDefaults().matcher(this.adminServer.path("/assets/**")))
 				.permitAll()
-				.requestMatchers(new AntPathRequestMatcher(this.adminServer.path("/login")))
+				.requestMatchers(PathPatternRequestMatcher.withDefaults().matcher(this.adminServer.path("/login")))
 				.permitAll()
 				.anyRequest()
 				.authenticated())
@@ -155,10 +156,10 @@ public class SpringBootAdminHazelcastApplication {
 				.csrf((csrf) -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 					.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 					.ignoringRequestMatchers(
-							new AntPathRequestMatcher(this.adminServer.path("/instances"), HttpMethod.POST.toString()),
-							new AntPathRequestMatcher(this.adminServer.path("/instances/*"),
-									HttpMethod.DELETE.toString()),
-							new AntPathRequestMatcher(this.adminServer.path("/actuator/**"))));
+							PathPatternRequestMatcher.withDefaults().matcher(POST, this.adminServer.path("/instances")),
+							PathPatternRequestMatcher.withDefaults()
+								.matcher(DELETE, this.adminServer.path("/instances/*")),
+							PathPatternRequestMatcher.withDefaults().matcher(this.adminServer.path("/actuator/**"))));
 
 			return http.build();
 		}

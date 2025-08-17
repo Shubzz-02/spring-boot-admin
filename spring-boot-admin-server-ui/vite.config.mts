@@ -39,6 +39,11 @@ export default defineConfig(({ mode }) => {
     ],
     css: {
       postcss,
+      preprocessorOptions: {
+        scss: {
+          api: 'modern-compiler',
+        },
+      },
     },
     test: {
       root: __dirname,
@@ -54,7 +59,7 @@ export default defineConfig(({ mode }) => {
     },
     root: frontendDir,
     build: {
-      target: 'es2020',
+      target: 'es2022',
       outDir,
       rollupOptions: {
         input: {
